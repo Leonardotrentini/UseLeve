@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>UseLeve — Peças Lisas de Alta Qualidade</title>
+<meta name="description" content="Peças lisas de alta qualidade direto da fábrica. Preço justo, qualidade garantida.">
+
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '920042570433713');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=920042570433713&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --bg: #F4EDE4;
+    --text: #2A3C2A;
+    --text-soft: #5A6B5A;
+    --gold: #B8973A;
+    --line: rgba(42, 60, 42, 0.12);
+    --cta-bg: #2A3C2A;
+    --cta-text: #F4EDE4;
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100dvh;
+    padding: 32px 28px;
+    text-align: center;
+    position: relative;
+  }
+
+  /* ── Logo ── */
+  .logo {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    display: block;
+    margin-bottom: 36px;
+    opacity: 0;
+    animation: fadeIn 0.8s ease forwards;
+  }
+
+  /* ── Divider ── */
+  .rule {
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+    margin-bottom: 36px;
+    opacity: 0;
+    animation: fadeIn 0.8s ease 0.15s forwards;
+  }
+
+  /* ── Headline ── */
+  .headline {
+    font-family: 'Italiana', serif;
+    font-weight: 400;
+    font-size: clamp(1.65rem, 7vw, 2.6rem);
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+    color: var(--text);
+    max-width: 380px;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeIn 0.8s ease 0.3s forwards;
+  }
+
+  .headline .accent {
+    color: var(--gold);
+  }
+
+  /* ── Subheadline ── */
+  .sub {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+    font-size: clamp(0.88rem, 3.6vw, 1rem);
+    line-height: 1.65;
+    color: var(--text-soft);
+    max-width: 340px;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeIn 0.8s ease 0.45s forwards;
+  }
+
+  .sub strong {
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  /* ── CTA ── */
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    font-size: 0.9rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--cta-text);
+    background: var(--cta-bg);
+    padding: 16px 44px;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity: 0;
+    animation: fadeIn 0.8s ease 0.6s forwards;
+  }
+
+  .cta svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    opacity: 0.85;
+  }
+
+  .cta:hover {
+    background: #1E2D1E;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(42, 60, 42, 0.18);
+  }
+
+  .cta:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(42, 60, 42, 0.12);
+  }
+
+  /* ── Trust ── */
+  .trust {
+    position: absolute;
+    bottom: max(24px, env(safe-area-inset-bottom, 24px));
+    font-family: 'Outfit', sans-serif;
+    font-weight: 300;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    opacity: 0;
+    animation: fadeIn 0.8s ease 0.75s forwards;
+  }
+
+  .trust span {
+    margin: 0 8px;
+    opacity: 0.3;
+  }
+
+  /* ── Animation ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+
+  /* ── Safe area ── */
+  @supports (padding-top: env(safe-area-inset-top)) {
+    .page {
+      padding-top: max(32px, env(safe-area-inset-top));
+      padding-bottom: max(32px, env(safe-area-inset-bottom));
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <img class="logo" src="logo-useleve.png" alt="UseLeve" width="96" height="96">
+
+  <div class="rule" aria-hidden="true"></div>
+
+  <h1 class="headline">
+    Peças <span class="accent">lisas</span> de alta qualidade direto da fábrica
+  </h1>
+
+  <p class="sub">
+    Compre <strong>diretamente da fábrica</strong>, garantindo alta qualidade e preço justo — não perca essa oportunidade.
+  </p>
+
+  <a
+    href="https://wa.me/5547991795290?text=Ol%C3%A1%2C%20quero%20conhecer%20a%20UseLeve!"
+    class="cta"
+    id="cta-catalogo"
+    target="_blank"
+    rel="noopener"
+  >
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Solicitar Catálogo
+  </a>
+
+  <p class="trust">
+    Fábrica própria <span>·</span> Pronta entrega <span>·</span> Atacado
+  </p>
+
+</div>
+
+<script>
+  document.getElementById('cta-catalogo').addEventListener('click', function() {
+    if (typeof fbq === 'function') {
+      fbq('track', 'Contact');
+    }
+  });
+</script>
+
+</body>
+</html>
