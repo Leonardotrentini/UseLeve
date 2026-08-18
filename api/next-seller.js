@@ -11,7 +11,7 @@ const KV_KEY = 'useleve:next-seller-seq';
 const DEFAULT_SELLERS = [
   {
     label: 'Rafael',
-    phone: '554792066309',
+    phone: '5547991795290',
   },
 ];
 
