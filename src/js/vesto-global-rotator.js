@@ -5,7 +5,11 @@
     encodeURIComponent(VESTO_KEY);
   var NEXT_SELLER_URL = '/api/next-seller';
   var FALLBACK_MSG = 'Olá, quero conhecer a UseLeve!';
+  var AUTO_REDIRECT_MS = 5000;
+
   var busy = false;
+  var completed = false;
+  var autoTimer = null;
 
   function buildRef() {
     var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -79,57 +83,80 @@
     );
   }
 
-  function openWhatsApp(phone, message) {
-    window.open(
-      'https://wa.me/' + phone + '?text=' + encodeURIComponent(message || FALLBACK_MSG),
-      '_blank',
-      'noopener,noreferrer'
-    );
+  function openWhatsApp(phone, message, sameTab) {
+    var url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message || FALLBACK_MSG);
+    if (sameTab) {
+      window.location.href = url;
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  function clearAutoRedirect() {
+    if (autoTimer) {
+      clearTimeout(autoTimer);
+      autoTimer = null;
+    }
+  }
+
+  function runWhatsAppFlow(sameTab) {
+    if (busy || completed) return Promise.resolve(false);
+
+    clearAutoRedirect();
+    busy = true;
+
+    var meta = readMeta();
+    meta.clickAt = Date.now();
+    meta.pageUrl = location.href;
+    meta.userAgent = navigator.userAgent || '';
+    var ref = buildRef();
+    var contactEventId = 'vst_contact_' + ref.toLowerCase();
+
+    try {
+      sessionStorage.setItem('vesto_ref', ref);
+    } catch (_) {}
+    try {
+      sessionStorage.setItem('vesto_contact_event_id', contactEventId);
+    } catch (_) {}
+
+    if (typeof fbq === 'function') {
+      fbq('track', 'Contact', {}, { eventID: contactEventId });
+    }
+
+    var attributionWait = Promise.race([sendAttribution(meta, ref, contactEventId), wait(2500)]);
+
+    return Promise.all([nextSeller(), attributionWait])
+      .then(function (results) {
+        var seller = results[0] || {};
+        var phone = seller.phone ? String(seller.phone) : '';
+        if (!phone) return false;
+        completed = true;
+        openWhatsApp(phone, seller.message || FALLBACK_MSG, sameTab);
+        return true;
+      })
+      .catch(function (err) {
+        console.error('[Vesto] Não foi possível obter o próximo vendedor.', err);
+        return false;
+      })
+      .finally(function () {
+        busy = false;
+      });
   }
 
   document.addEventListener(
     'click',
     function (e) {
       var btn = e.target && e.target.closest && e.target.closest('[data-vesto-whatsapp]');
-      if (!btn || busy) return;
+      if (!btn || busy || completed) return;
       e.preventDefault();
       e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      busy = true;
-
-      var meta = readMeta();
-      meta.clickAt = Date.now();
-      meta.pageUrl = location.href;
-      meta.userAgent = navigator.userAgent || '';
-      var ref = buildRef();
-      var contactEventId = 'vst_contact_' + ref.toLowerCase();
-      try {
-        sessionStorage.setItem('vesto_ref', ref);
-      } catch (_) {}
-      try {
-        sessionStorage.setItem('vesto_contact_event_id', contactEventId);
-      } catch (_) {}
-
-      if (typeof fbq === 'function') {
-        fbq('track', 'Contact', {}, { eventID: contactEventId });
-      }
-
-      var attributionWait = Promise.race([sendAttribution(meta, ref, contactEventId), wait(2500)]);
-
-      Promise.all([nextSeller(), attributionWait])
-        .then(function (results) {
-          var seller = results[0] || {};
-          var phone = seller.phone ? String(seller.phone) : '';
-          if (!phone) return;
-          openWhatsApp(phone, seller.message || FALLBACK_MSG);
-        })
-        .catch(function (err) {
-          console.error('[Vesto] Não foi possível obter o próximo vendedor.', err);
-        })
-        .finally(function () {
-          busy = false;
-        });
+      runWhatsAppFlow(false);
     },
     true
   );
+
+  autoTimer = setTimeout(function () {
+    runWhatsAppFlow(true);
+  }, AUTO_REDIRECT_MS);
 })();
