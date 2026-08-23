@@ -4,11 +4,12 @@
     'https://backend-production-7a466.up.railway.app/api/public/meta/attribution?key=' +
     encodeURIComponent(VESTO_KEY);
   var NEXT_SELLER_URL = '/api/next-seller';
+  var FALLBACK_PHONE = '554792066309';
   var FALLBACK_MSG = 'Olá, quero conhecer a UseLeve!';
   var AUTO_REDIRECT_MS = 5000;
 
   var busy = false;
-  var completed = false;
+  var navigated = false;
   var autoTimer = null;
 
   function buildRef() {
@@ -75,21 +76,34 @@
   }
 
   function nextSeller() {
-    return fetch(NEXT_SELLER_URL, { method: 'GET', cache: 'no-store', credentials: 'omit' }).then(
-      function (res) {
+    return fetch(NEXT_SELLER_URL, { method: 'GET', cache: 'no-store', credentials: 'omit' })
+      .then(function (res) {
         if (!res.ok) throw new Error('next_seller_' + res.status);
         return res.json();
-      }
+      })
+      .catch(function () {
+        return {
+          ok: true,
+          phone: FALLBACK_PHONE,
+          message: FALLBACK_MSG,
+        };
+      });
+  }
+
+  function buildWhatsAppUrl(phone, message) {
+    return (
+      'https://wa.me/' +
+      String(phone || FALLBACK_PHONE).replace(/\D/g, '') +
+      '?text=' +
+      encodeURIComponent(message || FALLBACK_MSG)
     );
   }
 
-  function openWhatsApp(phone, message, sameTab) {
-    var url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message || FALLBACK_MSG);
-    if (sameTab) {
-      window.location.href = url;
-      return;
-    }
-    window.open(url, '_blank', 'noopener,noreferrer');
+  /* Sempre same-tab: window.open é bloqueado no navegador in-app do Meta Ads */
+  function openWhatsApp(phone, message) {
+    var url = buildWhatsAppUrl(phone, message);
+    navigated = true;
+    window.location.href = url;
   }
 
   function clearAutoRedirect() {
@@ -99,8 +113,8 @@
     }
   }
 
-  function runWhatsAppFlow(sameTab) {
-    if (busy || completed) return Promise.resolve(false);
+  function runWhatsAppFlow() {
+    if (busy || navigated) return Promise.resolve(false);
 
     clearAutoRedirect();
     busy = true;
@@ -123,20 +137,20 @@
       fbq('track', 'Contact', {}, { eventID: contactEventId });
     }
 
-    var attributionWait = Promise.race([sendAttribution(meta, ref, contactEventId), wait(2500)]);
+    /* Attribution em paralelo com timeout curto; não trava o redirect */
+    var attributionWait = Promise.race([sendAttribution(meta, ref, contactEventId), wait(1200)]);
 
     return Promise.all([nextSeller(), attributionWait])
       .then(function (results) {
         var seller = results[0] || {};
-        var phone = seller.phone ? String(seller.phone) : '';
-        if (!phone) return false;
-        completed = true;
-        openWhatsApp(phone, seller.message || FALLBACK_MSG, sameTab);
+        var phone = seller.phone ? String(seller.phone) : FALLBACK_PHONE;
+        openWhatsApp(phone, seller.message || FALLBACK_MSG);
         return true;
       })
       .catch(function (err) {
-        console.error('[Vesto] Não foi possível obter o próximo vendedor.', err);
-        return false;
+        console.error('[Vesto] Fallback WhatsApp após erro.', err);
+        openWhatsApp(FALLBACK_PHONE, FALLBACK_MSG);
+        return true;
       })
       .finally(function () {
         busy = false;
@@ -147,16 +161,16 @@
     'click',
     function (e) {
       var btn = e.target && e.target.closest && e.target.closest('[data-vesto-whatsapp]');
-      if (!btn || busy || completed) return;
+      if (!btn || busy || navigated) return;
       e.preventDefault();
       e.stopPropagation();
       if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-      runWhatsAppFlow(false);
+      runWhatsAppFlow();
     },
     true
   );
 
   autoTimer = setTimeout(function () {
-    runWhatsAppFlow(true);
+    runWhatsAppFlow();
   }, AUTO_REDIRECT_MS);
 })();
