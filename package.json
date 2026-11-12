@@ -1,0 +1,24 @@
+{
+  "name": "useleve",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Leonardotrentini/UseLeve.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Leonardotrentini/UseLeve/issues"
+  },
+  "homepage": "https://github.com/Leonardotrentini/UseLeve#readme",
+  "dependencies": {
+    "@upstash/redis": "^1.41.0"
+  }
+}

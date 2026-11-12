@@ -11,6 +11,8 @@
   var busy = false;
   var navigated = false;
   var autoTimer = null;
+  var assigned = null;
+  var assignPromise = null;
 
   function buildRef() {
     var chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -31,6 +33,59 @@
     return new Promise(function (resolve) {
       setTimeout(resolve, ms);
     });
+  }
+
+  function buildWhatsAppUrl(phone, message) {
+    return (
+      'https://wa.me/' +
+      String(phone || FALLBACK_PHONE).replace(/\D/g, '') +
+      '?text=' +
+      encodeURIComponent(message || FALLBACK_MSG)
+    );
+  }
+
+  function updateCtaHrefs(phone, message) {
+    var url = buildWhatsAppUrl(phone, message);
+    var nodes = document.querySelectorAll('[data-vesto-whatsapp]');
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].setAttribute('href', url);
+    }
+    return url;
+  }
+
+  function assignSellerOnce() {
+    if (assigned) return Promise.resolve(assigned);
+    if (assignPromise) return assignPromise;
+
+    assignPromise = fetch(NEXT_SELLER_URL, {
+      method: 'GET',
+      cache: 'no-store',
+      credentials: 'omit',
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error('next_seller_' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        var phone = data && data.phone ? String(data.phone).replace(/\D/g, '') : FALLBACK_PHONE;
+        var message = (data && data.message) || FALLBACK_MSG;
+        assigned = {
+          phone: phone || FALLBACK_PHONE,
+          message: message,
+          label: data && data.label ? data.label : '',
+          seq: data && data.seq,
+        };
+        updateCtaHrefs(assigned.phone, assigned.message);
+        return assigned;
+      })
+      .catch(function (err) {
+        console.error('[Vesto] Falha ao reservar vendedor.', err);
+        assigned = { phone: FALLBACK_PHONE, message: FALLBACK_MSG, label: '', seq: null };
+        updateCtaHrefs(assigned.phone, assigned.message);
+        return assigned;
+      });
+
+    return assignPromise;
   }
 
   function sendAttribution(meta, ref, contactEventId) {
@@ -75,33 +130,8 @@
       });
   }
 
-  function nextSeller() {
-    return fetch(NEXT_SELLER_URL, { method: 'GET', cache: 'no-store', credentials: 'omit' })
-      .then(function (res) {
-        if (!res.ok) throw new Error('next_seller_' + res.status);
-        return res.json();
-      })
-      .catch(function () {
-        return {
-          ok: true,
-          phone: FALLBACK_PHONE,
-          message: FALLBACK_MSG,
-        };
-      });
-  }
-
-  function buildWhatsAppUrl(phone, message) {
-    return (
-      'https://wa.me/' +
-      String(phone || FALLBACK_PHONE).replace(/\D/g, '') +
-      '?text=' +
-      encodeURIComponent(message || FALLBACK_MSG)
-    );
-  }
-
-  /* Sempre same-tab: window.open é bloqueado no navegador in-app do Meta Ads */
   function openWhatsApp(phone, message) {
-    var url = buildWhatsAppUrl(phone, message);
+    var url = updateCtaHrefs(phone, message);
     navigated = true;
     window.location.href = url;
   }
@@ -137,14 +167,12 @@
       fbq('track', 'Contact', {}, { eventID: contactEventId });
     }
 
-    /* Attribution em paralelo com timeout curto; não trava o redirect */
     var attributionWait = Promise.race([sendAttribution(meta, ref, contactEventId), wait(1200)]);
 
-    return Promise.all([nextSeller(), attributionWait])
+    return Promise.all([assignSellerOnce(), attributionWait])
       .then(function (results) {
-        var seller = results[0] || {};
-        var phone = seller.phone ? String(seller.phone) : FALLBACK_PHONE;
-        openWhatsApp(phone, seller.message || FALLBACK_MSG);
+        var seller = results[0] || assigned || { phone: FALLBACK_PHONE, message: FALLBACK_MSG };
+        openWhatsApp(seller.phone, seller.message);
         return true;
       })
       .catch(function (err) {
@@ -169,6 +197,9 @@
     },
     true
   );
+
+  /* Reserva 1 número por visita (Redis) e atualiza o href do botão. */
+  assignSellerOnce();
 
   autoTimer = setTimeout(function () {
     runWhatsAppFlow();
