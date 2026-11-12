@@ -4,7 +4,7 @@
     'https://backend-production-7a466.up.railway.app/api/public/meta/attribution?key=' +
     encodeURIComponent(VESTO_KEY);
   var NEXT_SELLER_URL = '/api/next-seller';
-  var FALLBACK_PHONE = '554792066309';
+  var FALLBACK_PHONE = '5547991795290';
   var FALLBACK_MSG = 'Olá, quero conhecer a UseLeve!';
   var AUTO_REDIRECT_MS = 5000;
 
