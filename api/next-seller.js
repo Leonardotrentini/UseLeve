@@ -16,9 +16,6 @@ const SELLERS = [
   },
 ];
 
-let memorySeq = 0;
-let memoryLock = Promise.resolve();
-
 async function incrViaRest(base, token, key) {
   const res = await fetch(base.replace(/\/$/, '') + '/incr/' + encodeURIComponent(key), {
     method: 'POST',
@@ -44,14 +41,7 @@ async function incrementGlobalSeq() {
     return incrViaRest(upstashBase, upstashToken, KV_KEY);
   }
 
-  /* Fallback sem Redis: sequencial na mesma instância (warm). */
-  let next;
-  memoryLock = memoryLock.then(function () {
-    memorySeq += 1;
-    next = memorySeq;
-  });
-  await memoryLock;
-  return next;
+  throw new Error('missing_global_counter');
 }
 
 module.exports = async function handler(req, res) {
